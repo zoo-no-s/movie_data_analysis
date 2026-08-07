@@ -52,6 +52,7 @@ for movie in top_10_movie_info:
     movie['expert_score'] = soup.select_one('.star_box .star_cine21:first-child .num').text
     movie['nation'] = soup.select_one('.info_list li:nth-child(6)').text.replace(' ', '').replace('\n','')[2:]
     movie['c_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    movie['b_date'] = date.today().strftime("%Y-%m-%d")
 
     # 리뷰 수집
     review_list = soup.select('.expert_star li')
@@ -61,7 +62,8 @@ for movie in top_10_movie_info:
             'reviewer_name' : review.select_one('.reviewer .name').text,
             'score' : review.select_one('.reviewer .num').text,
             'review' : review.select_one('.review').text,
-            'c_datetime' : datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'c_datetime' : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'b_date' : date.today().strftime("%Y-%m-%d")
         })
         
     # 서버 과부하를 막기 위한 에티켓
