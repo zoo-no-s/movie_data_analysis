@@ -27,47 +27,62 @@ top_10_movie_review = []
 # 영화 정보 수집
 for movie in top_10_movie:
 
+    # 미개봉작에 대한 예외처리 추가
+    rank = movie.select_one('.rank').text
+    title = movie.select_one('.title').text 
+    score = movie.select_one('.star_wrap .num').text if movie.select_one('.star_wrap .num') else None
+    daily_audience = movie.select_one('.etc_info p:nth-child(1)').text.split('명')[0].replace(',','') if movie.select_one('.etc_info p:nth-child(1)') else None
+    total_audience = movie.select_one('.etc_info p:nth-child(2)').text.split(':')[1].split('명')[0].replace(',','') if movie.select_one('.etc_info p:nth-child(2)') else None
+    release_date = movie.select_one('.etc_info p:nth-child(3)').text.split(':')[1] if movie.select_one('.etc_info p:nth-child(3)') else None
+    href = movie.select_one("a").get('href') if movie.select_one("a").get('href') else None
+
+
     top_10_movie_info.append({
-        'rank' : movie.select_one('.rank').text,
-        'title' : movie.select_one('.title').text,
-        'score' : movie.select_one('.star_wrap .num').text,
-        'daily_audience' : movie.select_one('.etc_info p:nth-child(1)').text.split('명')[0].replace(',',''),
-        'total_audience' : movie.select_one('.etc_info p:nth-child(2)').text.split(':')[1].split('명')[0].replace(',',''),
-        'release_date' : movie.select_one('.etc_info p:nth-child(3)').text.split(':')[1],
-        'href' : movie.select_one("a").get('href')
+        'rank' : rank,
+        'title' : title,
+        'score' : score,
+        'daily_audience' : daily_audience,
+        'total_audience' : total_audience,
+        'release_date' : release_date,
+        'href' : href,
     })
 
 # 영화 상세 정보 수집
 for movie in top_10_movie_info:
+    # 경로에 대한 예외처리 추가
+    if(movie['href'] != 'javascript:;') : 
 
-    res = requests.get(f"{BASE_URL}{movie['href']}", headers=headers)
-    soup = BeautifulSoup(res.text, "html.parser")
+        res = requests.get(f"{BASE_URL}{movie['href']}", headers=headers)
+        soup = BeautifulSoup(res.text, "html.parser")
 
-    # 데이터 추가 수집
-    movie['id'] = movie['href'].split('=')[1]
-    movie['genre'] = soup.select_one('.info_list li:nth-child(5)').text.replace(' ', '').replace('\n','')[2:]
-    movie['grade'] = soup.select_one('.info_list li:nth-child(2)').text.replace(' ', '').replace('\n','')[2:]
-    movie['time'] = soup.select_one('.info_list li:nth-child(3)').text.replace(' ', '').replace('\n','')[2:]
-    movie['director'] = soup.select_one('.info_list li:nth-child(8) a').text.replace(' ', '').replace('\n','')
-    movie['expert_score'] = soup.select_one('.star_box .star_cine21:first-child .num').text
-    movie['nation'] = soup.select_one('.info_list li:nth-child(6)').text.replace(' ', '').replace('\n','')[2:]
-    movie['c_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    movie['b_date'] = date.today().strftime("%Y-%m-%d")
+        id = movie['href'].split('=')[1]
+    
 
-    # 리뷰 수집
-    review_list = soup.select('.expert_star li')
-    for review in review_list :
-        top_10_movie_review.append({
-            'id' : movie['href'].split('=')[1],
-            'reviewer_name' : review.select_one('.reviewer .name').text,
-            'score' : review.select_one('.reviewer .num').text,
-            'review' : review.select_one('.review').text,
-            'c_datetime' : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'b_date' : date.today().strftime("%Y-%m-%d")
-        })
-        
-    # 서버 과부하를 막기 위한 에티켓
-    time.sleep(1)
+        # 데이터 추가 수집
+        movie['id'] = id
+        movie['genre'] = soup.select_one('.info_list li:nth-child(5)').text.replace(' ', '').replace('\n','')[2:]
+        movie['grade'] = soup.select_one('.info_list li:nth-child(2)').text.replace(' ', '').replace('\n','')[2:]
+        movie['time'] = soup.select_one('.info_list li:nth-child(3)').text.replace(' ', '').replace('\n','')[2:]
+        movie['director'] = soup.select_one('.info_list li:nth-child(8) a').text.replace(' ', '').replace('\n','')
+        movie['expert_score'] = soup.select_one('.star_box .star_cine21:first-child .num').text
+        movie['nation'] = soup.select_one('.info_list li:nth-child(6)').text.replace(' ', '').replace('\n','')[2:]
+        movie['c_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        movie['b_date'] = date.today().strftime("%Y-%m-%d")
+
+        # 리뷰 수집
+        review_list = soup.select('.expert_star li')
+        for review in review_list :
+            top_10_movie_review.append({
+                'id' : movie['href'].split('=')[1],
+                'reviewer_name' : review.select_one('.reviewer .name').text,
+                'score' : review.select_one('.reviewer .num').text,
+                'review' : review.select_one('.review').text,
+                'c_datetime' : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'b_date' : date.today().strftime("%Y-%m-%d")
+            })
+            
+        # 서버 과부하를 막기 위한 에티켓
+        time.sleep(1)
 
 # csv 추출
 pd.DataFrame(top_10_movie_info).to_csv(f'../data/raw/movie_info_scrap/movie_info_scrap_{date.today().strftime("%Y%m%d")}.csv', index=False, encoding='utf-8-sig')
