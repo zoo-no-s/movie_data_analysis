@@ -45,6 +45,8 @@ for movie in top_10_movie:
         'total_audience' : total_audience,
         'release_date' : release_date,
         'href' : href,
+        'c_datetime' : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'b_date' : date.today().strftime("%Y-%m-%d")
     })
 
 # 영화 상세 정보 수집
@@ -66,8 +68,6 @@ for movie in top_10_movie_info:
         movie['director'] = soup.select_one('.info_list li:nth-child(8) a').text.replace(' ', '').replace('\n','')
         movie['expert_score'] = soup.select_one('.star_box .star_cine21:first-child .num').text
         movie['nation'] = soup.select_one('.info_list li:nth-child(6)').text.replace(' ', '').replace('\n','')[2:]
-        movie['c_datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        movie['b_date'] = date.today().strftime("%Y-%m-%d")
 
         # 리뷰 수집
         review_list = soup.select('.expert_star li')
