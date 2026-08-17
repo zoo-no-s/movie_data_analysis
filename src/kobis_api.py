@@ -11,11 +11,12 @@ load_dotenv()
 APIKEY = os.getenv('KOBIS_API_KEY')
 URL = 'http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json'
 
-# day_ago_list = range(1, 200) # 1일 전부터 14일전까지
-day_ago_list = range(1, 2) # 1일 전
+day_ago_list = range(1, 366) # 1일 전부터 14일전까지
+# day_ago_list = range(1, 15) # 1일 전
 
 for day_ago in day_ago_list : 
     target_date = (date.today() - timedelta(days=day_ago))
+    # target_date = date(2025, 8, 29) - timedelta(days=day_ago)
 
     params = {
         'key': APIKEY,
